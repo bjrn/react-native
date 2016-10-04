@@ -786,6 +786,12 @@ static UIImage *RCTResizeImageIfNeeded(UIImage *image,
   }
 }
 
+RCT_EXPORT_METHOD(flushCache:(NSInteger)foo)
+{
+  [_URLCache removeAllCachedResponses];
+}
+
+
 @end
 
 @implementation RCTBridge (RCTImageLoader)
