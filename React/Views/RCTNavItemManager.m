@@ -76,4 +76,7 @@ RCT_EXPORT_VIEW_PROPERTY(rightButtonSystemIcon, UIBarButtonSystemItem)
 RCT_EXPORT_VIEW_PROPERTY(onLeftButtonPress, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onRightButtonPress, RCTBubblingEventBlock)
 
+RCT_EXPORT_VIEW_PROPERTY(subtitle, NSString)
+RCT_EXPORT_VIEW_PROPERTY(disableTransition, BOOL)
+
 @end

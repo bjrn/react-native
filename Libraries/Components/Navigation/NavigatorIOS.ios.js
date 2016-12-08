@@ -97,6 +97,7 @@ type Route = {
   rightButtonSystemIcon?: SystemButtonType,
   onRightButtonPress?: Function,
   wrapperStyle?: any,
+  disableTransition?: boolean,
 };
 
 type State = {
@@ -887,6 +888,7 @@ var NavigatorIOS = React.createClass({
           vertical={this.props.vertical}
           requestedTopOfStack={this.state.requestedTopOfStack}
           onNavigationComplete={this._handleNavigationComplete}
+          backGestureEnabled={this.props.backGestureEnabled}
           interactivePopGestureEnabled={this.props.interactivePopGestureEnabled}>
           {items}
         </NavigatorTransitionerIOS>
