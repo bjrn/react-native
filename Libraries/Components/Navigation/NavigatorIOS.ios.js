@@ -96,6 +96,7 @@ type Route = {
   rightButtonSystemIcon?: SystemButtonType;
   onRightButtonPress?: Function,
   wrapperStyle?: any,
+  disableTransition?: boolean,
 };
 
 type State = {
