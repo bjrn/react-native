@@ -160,6 +160,7 @@ var ToolbarAndroid = React.createClass({
      * Used to locate this view in end-to-end tests.
      */
     testID: ReactPropTypes.string,
+    navTintColor: ColorPropType,
   },
 
   render: function() {

@@ -10,12 +10,16 @@
 package com.facebook.react.views.toolbar;
 
 import android.content.Context;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.Animatable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.TextView;
 
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.controller.BaseControllerListener;
@@ -33,11 +37,14 @@ import com.facebook.react.uimanager.PixelUtil;
 
 import javax.annotation.Nullable;
 
+import java.util.ArrayList;
+
 /**
  * Custom implementation of the {@link Toolbar} widget that adds support for remote images in logo
  * and navigationIcon using fresco.
  */
 public class ReactToolbar extends Toolbar {
+  private static final String LOG_TAG = "ReactToolbar";
 
   private static final String PROP_ACTION_ICON = "icon";
   private static final String PROP_ACTION_SHOW = "show";
@@ -57,6 +64,10 @@ public class ReactToolbar extends Toolbar {
   private IconControllerListener mLogoControllerListener;
   private IconControllerListener mNavIconControllerListener;
   private IconControllerListener mOverflowIconControllerListener;
+
+  private Drawable mNavIconDrawable = null;
+  private Drawable mNavIconOverride = null;
+  private int mNavTintColor;
 
   /**
    * Attaches specific icon width & height to a BaseControllerListener which will be used to
@@ -90,14 +101,17 @@ public class ReactToolbar extends Toolbar {
 
   private class ActionIconControllerListener extends IconControllerListener {
     private final MenuItem mItem;
+    private final ReactToolbar mToolbar;
 
-    ActionIconControllerListener(MenuItem item, DraweeHolder holder) {
+    ActionIconControllerListener(MenuItem item, DraweeHolder holder, ReactToolbar toolbar) {
       super(holder);
       mItem = item;
+      mToolbar = toolbar;
     }
 
     @Override
     protected void setDrawable(Drawable d) {
+      d.setColorFilter(mToolbar.getNavTintColor(), PorterDuff.Mode.SRC_IN);
       mItem.setIcon(d);
     }
   }
@@ -132,7 +146,7 @@ public class ReactToolbar extends Toolbar {
 
   }
 
-  public ReactToolbar(Context context) {
+  public ReactToolbar(Context context, int defaultTintColor) {
     super(context);
 
     mLogoHolder = DraweeHolder.create(createDraweeHierarchy(), context);
@@ -149,7 +163,8 @@ public class ReactToolbar extends Toolbar {
     mNavIconControllerListener = new IconControllerListener(mNavIconHolder) {
       @Override
       protected void setDrawable(Drawable d) {
-        setNavigationIcon(d);
+        mNavIconDrawable = d;
+        updateNavIcon();
       }
     };
 
@@ -160,6 +175,7 @@ public class ReactToolbar extends Toolbar {
       }
     };
 
+    mNavTintColor = defaultTintColor;
   }
 
   private final Runnable mLayoutRunnable = new Runnable() {
@@ -255,13 +271,55 @@ public class ReactToolbar extends Toolbar {
         item.setShowAsAction(showAsAction);
       }
     }
+
+    updateMenuItemColor();
+  }
+
+  public void setNavTintColor(int color) {
+    Log.e(LOG_TAG, "setting nav tint color: " + Integer.toHexString(color));
+    mNavTintColor = color;
+    updateNavIcon();
+    updateMenuItemColor();
+  }
+
+  public int getNavTintColor() {
+    return mNavTintColor;
+  }
+
+  private void updateNavIcon() {
+    Drawable icon = mNavIconOverride != null ? mNavIconOverride : mNavIconDrawable;
+    if (icon != null) {
+      icon.setColorFilter(mNavTintColor, PorterDuff.Mode.SRC_IN);
+      setNavigationIcon(icon);
+    }
+  }
+
+  private void updateMenuItemColor() {
+    Menu menu = getMenu();
+
+    for (int i = 0; i < menu.size(); i++) {
+      MenuItem item = menu.getItem(i);
+
+      String title = item.getTitle().toString();
+      ArrayList<View> items = new ArrayList<View>();
+      findViewsWithText(items, title, View.FIND_VIEWS_WITH_CONTENT_DESCRIPTION);
+      if (items.size() > 0) {
+        ((TextView)items.get(0)).setTextColor(mNavTintColor);
+      }
+
+      Drawable icon = item.getIcon();
+      if (icon != null) {
+        icon.setColorFilter(mNavTintColor, PorterDuff.Mode.SRC_IN);
+        item.setIcon(icon);
+      }
+    }
   }
 
   private void setMenuItemIcon(final MenuItem item, ReadableMap iconSource) {
 
     DraweeHolder<GenericDraweeHierarchy> holder =
             DraweeHolder.create(createDraweeHierarchy(), getContext());
-    ActionIconControllerListener controllerListener = new ActionIconControllerListener(item, holder);
+    ActionIconControllerListener controllerListener = new ActionIconControllerListener(item, holder, this);
     controllerListener.setIconImageInfo(getIconImageInfo(iconSource));
 
     setIconSource(iconSource, controllerListener, holder);
