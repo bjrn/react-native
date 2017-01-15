@@ -382,9 +382,8 @@ static UIImage *RCTResizeImageIfNeeded(UIImage *image,
   });
 
   return ^{
-    dispatch_block_t cancelLoadLocal = cancelLoad;
-    if (cancelLoadLocal) {
-      cancelLoadLocal();
+    if (cancelLoad && !cancelled) {
+      cancelLoad();
       cancelLoad = nil;
     }
     OSAtomicOr32Barrier(1, &cancelled);
@@ -517,9 +516,8 @@ static UIImage *RCTResizeImageIfNeeded(UIImage *image,
   __block volatile uint32_t cancelled = 0;
   __block dispatch_block_t cancelLoad = nil;
   dispatch_block_t cancellationBlock = ^{
-    dispatch_block_t cancelLoadLocal = cancelLoad;
-    if (cancelLoadLocal) {
-      cancelLoadLocal();
+    if (cancelLoad && !cancelled) {
+      cancelLoad();
     }
     OSAtomicOr32Barrier(1, &cancelled);
   };
@@ -566,7 +564,7 @@ static UIImage *RCTResizeImageIfNeeded(UIImage *image,
       completionBlock(error_, image);
     };
 
-    cancelLoad = [weakSelf decodeImageData:imageOrData
+    cancelLoad = [strongSelf decodeImageData:imageOrData
                                       size:size
                                      scale:scale
                                    clipped:clipped
@@ -778,7 +776,7 @@ static UIImage *RCTResizeImageIfNeeded(UIImage *image,
 
 RCT_EXPORT_METHOD(flushCache:(NSInteger)foo)
 {
-  [_URLCache removeAllCachedResponses];
+  [[NSURLCache sharedURLCache] removeAllCachedResponses];
 }
 
 
