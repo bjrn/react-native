@@ -28,6 +28,7 @@ RCT_EXPORT_VIEW_PROPERTY(requestedTopOfStack, NSInteger)
 RCT_EXPORT_VIEW_PROPERTY(onNavigationProgress, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onNavigationComplete, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(interactivePopGestureEnabled, BOOL)
+RCT_EXPORT_VIEW_PROPERTY(backGestureEnabled, BOOL)
 
 // TODO: remove error callbacks
 RCT_EXPORT_METHOD(requestSchedulingJavaScriptNavigation:(nonnull NSNumber *)reactTag
